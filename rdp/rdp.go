@@ -15,7 +15,7 @@ type Point struct {
 // Note: The resulting slice is a reslice of given points (it shares the same underlying array) for efficiency.
 // It works similar to append, so the input points should not be used after this call, use only the returned value.
 func Simplify(points []Point, epsilon float64) []Point {
-	if len(points) < 2 {
+	if len(points) <= 2 {
 		return points
 	}
 
@@ -38,15 +38,21 @@ func Simplify(points []Point, epsilon float64) []Point {
 		return append(points[:0], first, last)
 	}
 
-	firstHalf, lastHalf := points[:index], points[index:]
+	// Move index to avoids infinite recursive as slice input
+	// for next operation is never changed if we keep it as is.
+	if index == 0 || index == len(points) {
+		index++
+	}
 
-	return append(Simplify(firstHalf, epsilon), Simplify(lastHalf, epsilon)...)
+	left, right := points[:index], points[index:]
+
+	return append(Simplify(left, epsilon), Simplify(right, epsilon)...)
 }
 
 // perpendicularDistance calculates the perpendicular distance from a point to a line segment
 func perpendicularDistance(p, start, end Point) float64 {
 	if start.X == end.X && start.Y == end.Y {
-		// find distance between p and (start or end)
+		// Find distance between p and (start or end)
 		return euclidean(p, start)
 	}
 
