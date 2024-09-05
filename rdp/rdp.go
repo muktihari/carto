@@ -15,7 +15,7 @@ type Point struct {
 // Note: The resulting slice is a reslice of given points (it shares the same underlying array) for efficiency.
 // It works similar to append, so the input points should not be used after this call, use only the returned value.
 func Simplify(points []Point, epsilon float64) []Point {
-	if len(points) < 2 {
+	if len(points) <= 2 {
 		return points
 	}
 
@@ -38,19 +38,31 @@ func Simplify(points []Point, epsilon float64) []Point {
 		return append(points[:0], first, last)
 	}
 
-	firstHalf, lastHalf := points[:index], points[index:]
+	// Move index to avoids infinite recursive as slice input
+	// for next operation is never changed if we keep it as is.
+	if index == 0 || index == len(points) {
+		index++
+	}
 
-	return append(Simplify(firstHalf, epsilon), Simplify(lastHalf, epsilon)...)
+	left, right := points[:index], points[index:]
+
+	return append(Simplify(left, epsilon), Simplify(right, epsilon)...)
 }
 
 // perpendicularDistance calculates the perpendicular distance from a point to a line segment
 func perpendicularDistance(p, start, end Point) float64 {
 	if start.X == end.X && start.Y == end.Y {
-		return euclidean(start, end)
+		// Find distance between p and (start or end)
+		return euclidean(p, start)
 	}
-	numerator := math.Abs((end.Y-start.Y)*p.X - (end.X-start.X)*p.Y + end.X*start.Y - end.Y*start.X)
-	denominator := euclidean(start, end)
-	return numerator / denominator
+
+	// Standard Form: Ax + Bx + C = 0
+	A := end.Y - start.Y
+	B := start.X - end.X
+	C := (end.X * start.Y) - (start.X * end.Y)
+
+	// d = | Ax + By + C = 0 | / ✓(A²+B²)
+	return math.Abs(A*p.X+B*p.Y+C) / math.Sqrt(A*A+B*B)
 }
 
 // euclidean calculates the distance between two points.
