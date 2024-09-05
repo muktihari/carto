@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -80,6 +81,45 @@ func TestSimplify(t *testing.T) {
 			result := Simplify(tc.points, tc.epsilon)
 			if diff := cmp.Diff(result, tc.expect); diff != "" {
 				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+func TestPerpendicularDistance(t *testing.T) {
+	tt := []struct {
+		name  string
+		p     Point
+		start Point
+		end   Point
+		d     float64
+		prec  float64
+	}{
+		{
+			name:  "valid result",
+			p:     Point{X: 5, Y: 6},
+			start: Point{X: 0, Y: -1.3333333333333333},
+			end:   Point{X: 2, Y: 0},
+			d:     3.328,
+			prec:  1000,
+		},
+		{
+			name:  "zero result",
+			p:     Point{X: 5, Y: 6},
+			start: Point{X: 2, Y: 0},
+			end:   Point{X: 2, Y: 0},
+			d:     6.708, // euclidean((5,6), (2,0))
+			prec:  1000,
+		},
+	}
+
+	for i, tc := range tt {
+		t.Run(fmt.Sprintf("[%d] %s", i, tc.name), func(t *testing.T) {
+			d := perpendicularDistance(tc.p, tc.start, tc.end)
+			d = math.Round(d*tc.prec) / tc.prec
+			tc.d = math.Round(tc.d*tc.prec) / tc.prec
+			if d != tc.d {
+				t.Fatalf("expected: %g, got: %g", tc.d, d)
 			}
 		})
 	}

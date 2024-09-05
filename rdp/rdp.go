@@ -46,11 +46,17 @@ func Simplify(points []Point, epsilon float64) []Point {
 // perpendicularDistance calculates the perpendicular distance from a point to a line segment
 func perpendicularDistance(p, start, end Point) float64 {
 	if start.X == end.X && start.Y == end.Y {
-		return euclidean(start, end)
+		// find distance between p and (start or end)
+		return euclidean(p, start)
 	}
-	numerator := math.Abs((end.Y-start.Y)*p.X - (end.X-start.X)*p.Y + end.X*start.Y - end.Y*start.X)
-	denominator := euclidean(start, end)
-	return numerator / denominator
+
+	// Standard Form: Ax + Bx + C = 0
+	A := end.Y - start.Y
+	B := start.X - end.X
+	C := (end.X * start.Y) - (start.X * end.Y)
+
+	// d = | Ax + By + C = 0 | / ✓(A²+B²)
+	return math.Abs(A*p.X+B*p.Y+C) / math.Sqrt(A*A+B*B)
 }
 
 // euclidean calculates the distance between two points.
