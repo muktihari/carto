@@ -1,0 +1,61 @@
+// Package rdp host the implementation of [Ramer–Douglas–Peucker algorithm](https://w.wiki/B6U3) algorithm.
+package rdp
+
+import "math"
+
+// Point represents coordinates in 2D plane.
+type Point struct {
+	X, Y  float64 // X and Y represent coordinates (e.g Latitude and Longitude)
+	Index int     // [Optional] Index reference to the origin data.
+}
+
+// Simplify simplifies a curve by reducing the number of points in a curve composed of line segments,
+// resulting in a similar curve with fewer points. Ref: [Ramer–Douglas–Peucker algorithm](https://w.wiki/B6U3).
+//
+// Note: The resulting slice is a reslice of given points (it shares the same underlying array) for efficiency.
+// It works similar to append, so the input points should not be used after this call, use only the returned value.
+func Simplify(points []Point, epsilon float64) []Point {
+	if len(points) < 2 {
+		return points
+	}
+
+	var (
+		index   int
+		maxDist float64
+		first   = points[0]
+		last    = points[len(points)-1]
+	)
+
+	for i := range points {
+		d := perpendicularDistance(points[i], first, last)
+		if d > maxDist {
+			maxDist = d
+			index = i
+		}
+	}
+
+	if maxDist <= epsilon {
+		return append(points[:0], first, last)
+	}
+
+	firstHalf, lastHalf := points[:index], points[index:]
+
+	return append(Simplify(firstHalf, epsilon), Simplify(lastHalf, epsilon)...)
+}
+
+// perpendicularDistance calculates the perpendicular distance from a point to a line segment
+func perpendicularDistance(p, start, end Point) float64 {
+	if start.X == end.X && start.Y == end.Y {
+		return euclidean(start, end)
+	}
+	numerator := math.Abs((end.Y-start.Y)*p.X - (end.X-start.X)*p.Y + end.X*start.Y - end.Y*start.X)
+	denominator := euclidean(start, end)
+	return numerator / denominator
+}
+
+// euclidean calculates the distance between two points.
+func euclidean(p1, p2 Point) float64 {
+	x := p2.X - p1.X
+	y := p2.Y - p1.Y
+	return math.Sqrt(x*x + y*y)
+}
