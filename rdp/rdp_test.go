@@ -23,6 +23,18 @@ func TestSimplify(t *testing.T) {
 		expect  []Point
 	}{
 		{
+			name:    "no point is removed",
+			epsilon: 0,
+			points: []Point{
+				{X: 0.0, Y: 0.0},
+				{X: 0.1, Y: 0.2},
+			},
+			expect: []Point{
+				{X: 0.0, Y: 0.0},
+				{X: 0.1, Y: 0.2},
+			},
+		},
+		{
 			name:    "one points",
 			epsilon: 0.1,
 			points: []Point{
@@ -109,6 +121,22 @@ func TestPerpendicularDistance(t *testing.T) {
 			start: Point{X: 2, Y: 0},
 			end:   Point{X: 2, Y: 0},
 			d:     6.708, // euclidean((5,6), (2,0))
+			prec:  1000,
+		},
+		{
+			name:  "same as start, distance should be zero",
+			p:     Point{X: 45.897662518545985, Y: 6.801717197522521},
+			start: Point{X: 45.897662518545985, Y: 6.801717197522521},
+			end:   Point{X: 45.89766209945083, Y: 6.8017197120934725},
+			d:     0,
+			prec:  1000,
+		},
+		{
+			name:  "same as end, distance should be zero",
+			p:     Point{X: 45.89766209945083, Y: 6.8017197120934725},
+			start: Point{X: 45.897662518545985, Y: 6.801717197522521},
+			end:   Point{X: 45.89766209945083, Y: 6.8017197120934725},
+			d:     0,
 			prec:  1000,
 		},
 	}
