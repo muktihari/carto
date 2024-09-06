@@ -1,7 +1,9 @@
 // Package rdp host the implementation of [Ramer–Douglas–Peucker algorithm](https://w.wiki/B6U3) algorithm.
 package rdp
 
-import "math"
+import (
+	"math"
+)
 
 // Point represents coordinates in 2D plane.
 type Point struct {
@@ -15,6 +17,10 @@ type Point struct {
 // Note: The resulting slice is a reslice of given points (it shares the same underlying array) for efficiency.
 // It works similar to append, so the input points should not be used after this call, use only the returned value.
 func Simplify(points []Point, epsilon float64) []Point {
+	if epsilon <= 0 {
+		return points
+	}
+
 	if len(points) <= 2 {
 		return points
 	}
@@ -34,14 +40,8 @@ func Simplify(points []Point, epsilon float64) []Point {
 		}
 	}
 
-	if maxDist <= epsilon {
+	if maxDist <= epsilon || index == 0 || index == len(points)-1 {
 		return append(points[:0], first, last)
-	}
-
-	// Move index to avoids infinite recursive as slice input
-	// for next operation is never changed if we keep it as is.
-	if index == 0 || index == len(points) {
-		index++
 	}
 
 	left, right := points[:index], points[index:]
@@ -59,7 +59,7 @@ func perpendicularDistance(p, start, end Point) float64 {
 	// Standard Form: Ax + Bx + C = 0
 	A := end.Y - start.Y
 	B := start.X - end.X
-	C := (end.X * start.Y) - (start.X * end.Y)
+	C := start.Y*(end.X-start.X) - (end.Y-start.Y)*start.X
 
 	// d = | Ax + By + C = 0 | / ✓(A²+B²)
 	return math.Abs(A*p.X+B*p.Y+C) / math.Sqrt(A*A+B*B)
