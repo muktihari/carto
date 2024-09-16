@@ -56,12 +56,12 @@ func perpendicularDistance(p, start, end Point) float64 {
 		return euclidean(p, start)
 	}
 
-	// Standard Form: Ax + Bx + C = 0
+	// Standard Form: Ax + By + C = 0
 	A := end.Y - start.Y
 	B := start.X - end.X
 	C := start.Y*(end.X-start.X) - (end.Y-start.Y)*start.X
 
-	// d = | Ax + By + C = 0 | / ✓(A²+B²)
+	// d = | Ax + By + C | / ✓(A²+B²)
 	return math.Abs(A*p.X+B*p.Y+C) / math.Sqrt(A*A+B*B)
 }
 
